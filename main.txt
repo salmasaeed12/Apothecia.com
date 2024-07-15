@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+sqlalchemy
+databases
+pydantic
+aiosqlite
+werkzeug
+python-jose
+mysqlclient
+PyMySQL
+aiomysql
