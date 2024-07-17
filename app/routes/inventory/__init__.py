@@ -60,3 +60,145 @@ async def delete_inventory_entry(inventory_id: int, db: Session = Depends(get_db
     db.delete(inventory_entry)
     db.commit()
     return {"msg": "Inventory entry deleted successfully"}
+
+@router.delete("/")
+async def delete_all_inventory_entries(db: Session = Depends(get_db)):
+    db.query(Inventory).delete()
+    db.commit()
+    return {"msg": "All inventory entries deleted successfully"}
+
+@router.get("/product/{product_id}")
+async def read_inventory_by_product(product_id: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.product_id == product_id).all()
+    return inventory
+
+@router.get("/supplier/{supplier_id}")
+async def read_inventory_by_supplier(supplier_id: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.supplier_id == supplier_id).all()
+    return inventory
+
+@router.get("/received/{received_date}")
+async def read_inventory_by_received_date(received_date: datetime, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.received_date == received_date).all()
+    return inventory
+
+@router.get("/quantity/{quantity}")
+async def read_inventory_by_quantity(quantity: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.quantity == quantity).all()
+    return inventory
+
+@router.get("/quantity/less/{quantity}")
+async def read_inventory_by_quantity_less(quantity: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.quantity < quantity).all()
+    return inventory
+
+@router.get("/quantity/more/{quantity}")
+async def read_inventory_by_quantity_more(quantity: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.quantity > quantity).all()
+    return inventory
+
+@router.get("/quantity/between/{quantity1}/{quantity2}")
+async def read_inventory_by_quantity_between(quantity1: int, quantity2: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.quantity.between(quantity1, quantity2)).all()
+    return inventory
+
+@router.get("/received/before/{received_date}")
+async def read_inventory_received_before(received_date: datetime, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.received_date < received_date).all()
+    return inventory
+
+@router.get("/received/after/{received_date}")
+async def read_inventory_received_after(received_date: datetime, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.received_date > received_date).all()
+    return inventory
+
+@router.get("/received/between/{received_date1}/{received_date2}")
+async def read_inventory_received_between(received_date1: datetime, received_date2: datetime, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.received_date.between(received_date1, received_date2)).all()
+    return inventory
+
+@router.get("/product/{product_id}/supplier/{supplier_id}")
+async def read_inventory_by_product_supplier(product_id: int, supplier_id: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.product_id == product_id, Inventory.supplier_id == supplier_id).all()
+    return inventory
+
+@router.get("/product/{product_id}/received/{received_date}")
+async def read_inventory_by_product_received(product_id: int, received_date: datetime, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.product_id == product_id, Inventory.received_date == received_date).all()
+    return inventory
+
+@router.get("/product/{product_id}/quantity/{quantity}")
+async def read_inventory_by_product_quantity(product_id: int, quantity: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.product_id == product_id, Inventory.quantity == quantity).all()
+    return inventory
+
+@router.get("/product/{product_id}/quantity/less/{quantity}")
+async def read_inventory_by_product_quantity_less(product_id: int, quantity: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.product_id == product_id, Inventory.quantity < quantity).all()
+    return inventory
+
+@router.get("/product/{product_id}/quantity/more/{quantity}")
+async def read_inventory_by_product_quantity_more(product_id: int, quantity: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.product_id == product_id, Inventory.quantity > quantity).all()
+    return inventory
+
+@router.get("/product/{product_id}/quantity/between/{quantity1}/{quantity2}")
+async def read_inventory_by_product_quantity_between(product_id: int, quantity1: int, quantity2: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.product_id == product_id, Inventory.quantity.between(quantity1, quantity2)).all()
+    return inventory
+
+@router.get("/product/{product_id}/received/before/{received_date}")
+async def read_inventory_by_product_received_before(product_id: int, received_date: datetime, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.product_id == product_id, Inventory.received_date < received_date).all()
+    return inventory
+
+@router.get("/product/{product_id}/received/after/{received_date}")
+async def read_inventory_by_product_received_after(product_id: int, received_date: datetime, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.product_id == product_id, Inventory.received_date > received_date).all()
+    return inventory
+
+@router.get("/product/{product_id}/received/between/{received_date1}/{received_date2}")
+async def read_inventory_by_product_received_between(product_id: int, received_date1: datetime, received_date2: datetime, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.product_id == product_id, Inventory.received_date.between(received_date1, received_date2)).all()
+    return inventory
+
+@router.get("/supplier/{supplier_id}/received/{received_date}")
+async def read_inventory_by_supplier_received(supplier_id: int, received_date: datetime, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.supplier_id == supplier_id, Inventory.received_date == received_date).all()
+    return inventory
+
+@router.get("/supplier/{supplier_id}/quantity/{quantity}")
+async def read_inventory_by_supplier_quantity(supplier_id: int, quantity: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.supplier_id == supplier_id, Inventory.quantity == quantity).all()
+    return inventory
+
+@router.get("/supplier/{supplier_id}/quantity/less/{quantity}")
+async def read_inventory_by_supplier_quantity_less(supplier_id: int, quantity: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.supplier_id == supplier_id, Inventory.quantity < quantity).all()
+    return inventory
+
+@router.get("/supplier/{supplier_id}/quantity/more/{quantity}")
+async def read_inventory_by_supplier_quantity_more(supplier_id: int, quantity: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.supplier_id == supplier_id, Inventory.quantity > quantity).all()
+    return inventory
+
+@router.get("/supplier/{supplier_id}/quantity/between/{quantity1}/{quantity2}")
+async def read_inventory_by_supplier_quantity_between(supplier_id: int, quantity1: int, quantity2: int, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.supplier_id == supplier_id, Inventory.quantity.between(quantity1, quantity2)).all()
+    return inventory
+
+@router.get("/supplier/{supplier_id}/received/before/{received_date}")
+async def read_inventory_by_supplier_received_before(supplier_id: int, received_date: datetime, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.supplier_id == supplier_id, Inventory.received_date < received_date).all()
+    return inventory
+
+@router.get("/supplier/{supplier_id}/received/after/{received_date}")
+async def read_inventory_by_supplier_received_after(supplier_id: int, received_date: datetime, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.supplier_id == supplier_id, Inventory.received_date > received_date).all()
+    return inventory
+
+@router.get("/supplier/{supplier_id}/received/between/{received_date1}/{received_date2}")
+async def read_inventory_by_supplier_received_between(supplier_id: int, received_date1: datetime, received_date2: datetime, db: Session = Depends(get_db)):
+    inventory = db.query(Inventory).filter(Inventory.supplier_id == supplier_id, Inventory.received_date.between(received_date1, received_date2)).all()
+    return inventory
+

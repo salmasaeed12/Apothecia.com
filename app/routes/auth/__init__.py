@@ -140,3 +140,16 @@ async def user_order_products(user_id: int, order_id: int):
     products = order.products
     db.close()
     return products
+
+@router.get("/users/{user_id}/orders/{order_id}/products/count")
+async def count_user_order_products(user_id: int, order_id: int):
+    db = SessionLocal()
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    order = user.orders.filter(Order.id == order_id).first()
+    if order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    count = order.products.count()
+    db.close()
+    return {"count": count}

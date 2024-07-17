@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.models import Category, Product, Order
+from app.models import Category, Product, Order, Inventory, OrderDetail, Supplier
 from app.database import SessionLocal
 
 router = APIRouter()
@@ -244,4 +244,253 @@ async def order_details_count(product_id: int, order_id: int):
     count = len(order.order_details)
     db.close()
     return {"count": count}
+#ordeldetails has a problem
+@router.get("/{product_id}/orders/{order_id}/details/{order_detail_id}")
+async def order_detail(product_id: int, order_id: int, order_detail_id: int):
+    db = SessionLocal()
+    order = db.query(Order).filter(Order.order_id == order_id).first()
+    if order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    detail = db.query(OrderDetail).filter(OrderDetail.order_detail_id == order_detail_id).first()
+    db.close()
+    if detail is None:
+        raise HTTPException(status_code=404, detail="Order detail not found")
+    return detail
 
+@router.put("/{product_id}/orders/{order_id}/details/{order_detail_id}")
+async def update_order_detail(product_id: int, order_id: int, order_detail_id: int, quantity: int, price: float, total_price: float):
+    db = SessionLocal()
+    detail = db.query(OrderDetail).filter(OrderDetail.order_detail_id == order_detail_id).first()
+    if detail is None:
+        raise HTTPException(status_code=404, detail="Order detail not found")
+    detail.quantity = quantity
+    detail.price = price
+    detail.total_price = total_price
+    db.commit()
+    db.close()
+    return {"msg": "Order detail updated successfully"}
+
+@router.delete("/{product_id}/orders/{order_id}/details/{order_detail_id}")
+async def delete_order_detail(product_id: int, order_id: int, order_detail_id: int):
+    db = SessionLocal()
+    detail = db.query(OrderDetail).filter(OrderDetail.order_detail_id == order_detail_id).first()
+    if detail is None:
+        raise HTTPException(status_code=404, detail="Order detail not found")
+    db.delete(detail)
+    db.commit()
+    db.close()
+    return {"msg": "Order detail deleted successfully"}
+
+@router.get("/{product_id}/orders/{order_id}/details/{order_detail_id}/product")
+async def order_detail_product(product_id: int, order_id: int, order_detail_id: int):
+    db = SessionLocal()
+    detail = db.query(OrderDetail).filter(OrderDetail.order_detail_id == order_detail_id).first()
+    if detail is None:
+        raise HTTPException(status_code=404, detail="Order detail not found")
+    product = detail.product
+    db.close()
+    return product
+
+@router.get("/{product_id}/orders/{order_id}/details/{order_detail_id}/order")
+async def order_detail_order(product_id: int, order_id: int, order_detail_id: int):
+    db = SessionLocal()
+    detail = db.query(OrderDetail).filter(OrderDetail.order_detail_id == order_detail_id).first()
+    if detail is None:
+        raise HTTPException(status_code=404, detail="Order detail not found")
+    order = detail.order
+    db.close()
+    return order
+
+@router.get("/{category_id}/products/{product_id}/inventory")
+async def product_inventory(category_id: int, product_id: int):
+    db = SessionLocal()
+    product = db.query(Product).filter(Product.category_id == category_id, Product.product_id == product_id).first()
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    inventory = product.inventory_entries
+    db.close()
+    return inventory
+
+@router.get("/{category_id}/products/{product_id}/inventory/count")
+async def product_inventory_count(category_id: int, product_id: int):
+    db = SessionLocal()
+    product = db.query(Product).filter(Product.category_id == category_id, Product.product_id == product_id).first()
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    count = len(product.inventory_entries)
+    db.close()
+    return {"count": count}
+
+@router.get("/{category_id}/products/{product_id}/inventory/{inventory_id}")
+async def product_inventory_entry(category_id: int, product_id: int, inventory_id: int):
+    db = SessionLocal()
+    product = db.query(Product).filter(Product.category_id == category_id, Product.product_id == product_id).first()
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    inventory = db.query(Inventory).filter(Inventory.inventory_id == inventory_id).first()
+    db.close()
+    if inventory is None:
+        raise HTTPException(status_code=404, detail="Inventory entry not found")
+    return inventory
+
+@router.put("/{category_id}/products/{product_id}/inventory/{inventory_id}")
+async def update_inventory_entry(category_id: int, product_id: int, inventory_id: int, quantity: int, inventory_type: str):
+    db = SessionLocal()
+    inventory = db.query(Inventory).filter(Inventory.inventory_id == inventory_id).first()
+    if inventory is None:
+        raise HTTPException(status_code=404, detail="Inventory entry not found")
+    inventory.quantity = quantity
+    inventory.type = inventory_type
+    db.commit()
+    db.close()
+    return {"msg": "Inventory entry updated successfully"}
+
+@router.delete("/{category_id}/products/{product_id}/inventory/{inventory_id}")
+async def delete_inventory_entry(category_id: int, product_id: int, inventory_id: int):
+    db = SessionLocal()
+    inventory = db.query(Inventory).filter(Inventory.inventory_id == inventory_id).first()
+    if inventory is None:
+        raise HTTPException(status_code=404, detail="Inventory entry not found")
+    db.delete(inventory)
+    db.commit()
+    db.close()
+    return {"msg": "Inventory entry deleted successfully"}
+
+@router.get("/{category_id}/products/{product_id}/inventory/{inventory_id}/product")
+async def inventory_entry_product(category_id: int, product_id: int, inventory_id: int):
+    db = SessionLocal()
+    inventory = db.query(Inventory).filter(Inventory.inventory_id == inventory_id).first()
+    if inventory is None:
+        raise HTTPException(status_code=404, detail="Inventory entry not found")
+    product = inventory.product
+    db.close()
+    return product
+
+@router.get("/{category_id}/products/{product_id}/inventory/{inventory_id}/supplier")
+async def inventory_entry_supplier(category_id: int, product_id: int, inventory_id: int):
+    db = SessionLocal()
+    inventory = db.query(Inventory).filter(Inventory.inventory_id == inventory_id).first()
+    if inventory is None:
+        raise HTTPException(status_code=404, detail="Inventory entry not found")
+    supplier = inventory.supplier
+    db.close()
+    return supplier
+
+@router.get("/{category_id}/products/{product_id}/inventory/{inventory_id}/supplier/{supplier_id}")
+async def inventory_entry_supplier(category_id: int, product_id: int, inventory_id: int, supplier_id: int):
+    db = SessionLocal()
+    inventory = db.query(Inventory).filter(Inventory.inventory_id == inventory_id).first()
+    if inventory is None:
+        raise HTTPException(status_code=404, detail="Inventory entry not found")
+    supplier = db.query(Supplier).filter(Supplier.supplier_id == supplier_id).first()
+    db.close()
+    if supplier is None:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    return supplier
+
+@router.get("/{category_id}/products/{product_id}/inventory/{inventory_id}/supplier/{supplier_id}/inventory")
+async def supplier_inventory(category_id: int, product_id: int, inventory_id: int, supplier_id: int):
+    db = SessionLocal()
+    supplier = db.query(Supplier).filter(Supplier.supplier_id == supplier_id).first()
+    if supplier is None:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    inventory = supplier.inventory_entries
+    db.close()
+    return inventory
+
+@router.get("/{category_id}/products/{product_id}/inventory/{inventory_id}/supplier/{supplier_id}/inventory/count")
+async def supplier_inventory_count(category_id: int, product_id: int, inventory_id: int, supplier_id: int):
+    db = SessionLocal()
+    supplier = db.query(Supplier).filter(Supplier.supplier_id == supplier_id).first()
+    if supplier is None:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    count = len(supplier.inventory_entries)
+    db.close()
+    return {"count": count}
+
+@router.get("/{category_id}/products/{product_id}/inventory/{inventory_id}/supplier/{supplier_id}/inventory/{supplier_inventory_id}")
+async def supplier_inventory_entry(category_id: int, product_id: int, inventory_id: int, supplier_id: int, supplier_inventory_id: int):
+    db = SessionLocal()
+    supplier = db.query(Supplier).filter(Supplier.supplier_id == supplier_id).first()
+    if supplier is None:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    inventory = db.query(Inventory).filter(Inventory.inventory_id == supplier_inventory_id).first()
+    db.close()
+    if inventory is None:
+        raise HTTPException(status_code=404, detail="Inventory entry not found")
+    return inventory
+
+@router.put("/{category_id}/products/{product_id}/inventory/{inventory_id}/supplier/{supplier_id}/inventory/{supplier_inventory_id}")
+async def update_supplier_inventory_entry(category_id: int, product_id: int, inventory_id: int, supplier_id: int, supplier_inventory_id: int, quantity: int, received_date: str):
+    db = SessionLocal()
+    inventory = db.query(Inventory).filter(Inventory.inventory_id == supplier_inventory_id).first()
+    if inventory is None:
+        raise HTTPException(status_code=404, detail="Inventory entry not found")
+    inventory.quantity = quantity
+    inventory.received_date = received_date
+    db.commit()
+    db.close()
+    return {"msg": "Inventory entry updated successfully"}
+
+@router.delete("/{category_id}/products/{product_id}/inventory/{inventory_id}/supplier/{supplier_id}/inventory/{supplier_inventory_id}")
+async def delete_supplier_inventory_entry(category_id: int, product_id: int, inventory_id: int, supplier_id: int, supplier_inventory_id: int):
+    db = SessionLocal()
+    inventory = db.query(Inventory).filter(Inventory.inventory_id == supplier_inventory_id).first()
+    if inventory is None:
+        raise HTTPException(status_code=404, detail="Inventory entry not found")
+    db.delete(inventory)
+    db.commit()
+    db.close()
+    return {"msg": "Inventory entry deleted successfully"}
+
+@router.get("/{category_id}/products/{product_id}/inventory/{inventory_id}/supplier/{supplier_id}/inventory/{supplier_inventory_id}/product")
+async def supplier_inventory_product(category_id: int, product_id: int, inventory_id: int, supplier_id: int, supplier_inventory_id: int):
+    db = SessionLocal()
+    inventory = db.query(Inventory).filter(Inventory.inventory_id == supplier_inventory_id).first()
+    if inventory is None:
+        raise HTTPException(status_code=404, detail="Inventory entry not found")
+    product = inventory.product
+    db.close()
+    return product
+
+@router.get("/{category_id}/products/{product_id}/inventory/{inventory_id}/supplier/{supplier_id}/inventory/{supplier_inventory_id}/supplier")
+async def supplier_inventory_supplier(category_id: int, product_id: int, inventory_id: int, supplier_id: int, supplier_inventory_id: int):
+    db = SessionLocal()
+    inventory = db.query(Inventory).filter(Inventory.inventory_id == supplier_inventory_id).first()
+    if inventory is None:
+        raise HTTPException(status_code=404, detail="Inventory entry not found")
+    supplier = inventory.supplier
+    db.close()
+    return supplier
+
+@router.get("/{category_id}/products/{product_id}/inventory/{inventory_id}/supplier/{supplier_id}/inventory/{supplier_inventory_id}/supplier/{supplier_inventory_id}")
+async def supplier_inventory_supplier(category_id: int, product_id: int, inventory_id: int, supplier_id: int, supplier_inventory_id: int):
+    db = SessionLocal()
+    inventory = db.query(Inventory).filter(Inventory.inventory_id == supplier_inventory_id).first()
+    if inventory is None:
+        raise HTTPException(status_code=404, detail="Inventory entry not found")
+    supplier = db.query(Supplier).filter(Supplier.supplier_id == supplier_id).first()
+    db.close()
+    if supplier is None:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    return supplier
+
+@router.get("/{category_id}/products/{product_id}/inventory/{inventory_id}/supplier/{supplier_id}/inventory/{supplier_inventory_id}/supplier/{supplier_inventory_id}/inventory")
+async def supplier_inventory(category_id: int, product_id: int, inventory_id: int, supplier_id: int, supplier_inventory_id: int):
+    db = SessionLocal()
+    supplier = db.query(Supplier).filter(Supplier.supplier_id == supplier_id).first()
+    if supplier is None:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    inventory = supplier.inventory_entries
+    db.close()
+    return inventory
+
+@router.get("/{category_id}/products/{product_id}/inventory/{inventory_id}/supplier/{supplier_id}/inventory/{supplier_inventory_id}/supplier/{supplier_inventory_id}/inventory/count")
+async def supplier_inventory_count(category_id: int, product_id: int, inventory_id: int, supplier_id: int, supplier_inventory_id: int):
+    db = SessionLocal()
+    supplier = db.query(Supplier).filter(Supplier.supplier_id == supplier_id).first()
+    if supplier is None:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    count = len(supplier.inventory_entries)
+    db.close()
+    return {"count": count}
