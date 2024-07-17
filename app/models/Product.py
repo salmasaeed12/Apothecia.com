@@ -17,4 +17,5 @@ class Product(Base):
     category = relationship('Category', back_populates='products')
     order_details = relationship('OrderDetail', back_populates='product')
     inventory_entries = relationship('Inventory', back_populates='product')
+    orders = relationship("Order", back_populates="product")
 

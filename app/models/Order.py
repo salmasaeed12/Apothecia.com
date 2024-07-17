@@ -1,8 +1,6 @@
-from sqlalchemy import Column, Integer, String, DECIMAL, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, DECIMAL, ForeignKey, DateTime, Float  # Import the Float type
 from sqlalchemy.orm import relationship
 from ..database import Base
-
-
 
 class Order(Base):
     __tablename__ = 'orders'  # Corrected __tablename__
@@ -24,6 +22,7 @@ class OrderDetail(Base):
     product_id = Column(Integer, ForeignKey('products.product_id'))
     quantity = Column(Integer, nullable=False)
     price = Column(DECIMAL(10, 2), nullable=False)
+    total_price = Column(Float)
 
     order = relationship('Order', back_populates='order_details')
     product = relationship('Product', back_populates='order_details')
