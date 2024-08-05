@@ -1,24 +1,28 @@
-from sqlalchemy import Column, Integer, String, Enum, Text
-from sqlalchemy.orm import relationship
 from ..database import Base
-from enum import Enum as PyEnum
+from tortoise import fields, models
+from tortoise.contrib.pydantic import pydantic_model_creator
+from enum import Enum
 
-
-class UserRole(PyEnum):
+class UserRole(str, Enum):
     admin = "admin"
     user = "user"
 
+class User(models.Model):
+    id = fields.IntField(pk=True)  # Primary key
+    first_name = fields.CharField(max_length=100)
+    last_name = fields.CharField(max_length=100)
+    email = fields.CharField(max_length=100)
+    password_hash = fields.CharField(max_length=100)
+    phone = fields.CharField(max_length=20, null=True)
+    address = fields.TextField(null=True)
+    role = fields.CharEnumField(UserRole, default=UserRole.user)
 
-class User(Base):
-    __tablename__ = 'users'  # Corrected __tablename__
+    orders = fields.ReverseRelation['Order']
 
-    user_id = Column(Integer, primary_key=True, autoincrement=True)
-    first_name = Column(String(50), nullable=False)
-    last_name = Column(String(50), nullable=False)
-    email = Column(String(100), nullable=False)
-    password_hash = Column(String(255), nullable=False)
-    phone = Column(String(50))
-    address = Column(Text)
-    role = Column(Enum(UserRole), default=UserRole.user)
+    class Meta:
+        table = 'users'
 
-    orders = relationship('Order', back_populates='user')
+# Optional: Pydantic model for User
+User_Pydantic = pydantic_model_creator(User, name="User")
+user_pydanticIn = pydantic_model_creator(User, name="UserIn", exclude_readonly=True)
+user_pydanticOut = pydantic_model_creator(User, name="UserOut", exclude=("password"))

@@ -1,13 +1,11 @@
-from sqlalchemy import Column, Integer, String, Text
-from sqlalchemy.orm import relationship
 from ..database import Base
+from tortoise import fields, models
 
+class Category(models.Model):
+    id = fields.IntField(pk=True)  # Primary key
+    name = fields.CharField(max_length=50)
+    description = fields.TextField(null=True)
+    products = fields.ReverseRelation['Product']
 
-class Category(Base):
-    __tablename__ = 'categories'  # Corrected __tablename__
-
-    category_id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), nullable=False)
-    description = Column(Text)
-
-    products = relationship('Product', back_populates='category')
+    class Meta:
+        table = 'categories'
