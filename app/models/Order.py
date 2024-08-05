@@ -1,29 +1,25 @@
-from sqlalchemy import Column, Integer, String, DECIMAL, ForeignKey, DateTime, Float  # Import the Float type
-from sqlalchemy.orm import relationship
 from ..database import Base
+from tortoise import fields, models
 
-class Order(Base):
-    __tablename__ = 'orders'  # Corrected __tablename__
+class Order(models.Model):
+    id = fields.IntField(pk=True)  # Primary key
+    user = fields.ForeignKeyField('models.User', related_name='orders')
+    order_date = fields.DatetimeField()
+    status = fields.CharField(max_length=50)
 
-    order_id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('users.user_id'))
-    order_date = Column(DateTime, nullable=False)
-    status = Column(String(50), nullable=False)
+    order_details = fields.ReverseRelation['OrderDetail']
 
-    user = relationship('User', back_populates='orders')
-    order_details = relationship('OrderDetail', back_populates='order')
+    class Meta:
+        table = 'orders'
 
 
-class OrderDetail(Base):
-    __tablename__ = 'order_details'  # Corrected __tablename__
+class OrderDetail(models.Model):
+    id = fields.IntField(pk=True)  # Primary key
+    order = fields.ForeignKeyField('models.Order', related_name='order_details')
+    product = fields.ForeignKeyField('models.Product', related_name='order_details')
+    quantity = fields.IntField()
+    price = fields.DecimalField(max_digits=10, decimal_places=2)
+    total_price = fields.FloatField(null=True)
 
-    order_detail_id = Column(Integer, primary_key=True, autoincrement=True)
-    order_id = Column(Integer, ForeignKey('orders.order_id'))
-    product_id = Column(Integer, ForeignKey('products.product_id'))
-    quantity = Column(Integer, nullable=False)
-    price = Column(DECIMAL(10, 2), nullable=False)
-    total_price = Column(Float)
-
-    order = relationship('Order', back_populates='order_details')
-    product = relationship('Product', back_populates='order_details')
-
+    class Meta:
+        table = 'order_details'

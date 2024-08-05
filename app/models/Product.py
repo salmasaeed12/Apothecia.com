@@ -1,21 +1,18 @@
-from sqlalchemy import Column, Integer, String, Text, DECIMAL, ForeignKey
-from sqlalchemy.orm import relationship
 from ..database import Base
+from tortoise import fields, models
 
+class Product(models.Model):
+    id = fields.IntField(pk=True)  # Primary key
+    name = fields.CharField(max_length=50)
+    description = fields.TextField(null=True)
+    price = fields.DecimalField(max_digits=10, decimal_places=2)
+    stock_quantity = fields.IntField()
+    category = fields.ForeignKeyField('models.Category', related_name='products')
 
+    order_details = fields.ReverseRelation['OrderDetail']
+    inventory_entries = fields.ReverseRelation['Inventory']
+    orders = fields.ManyToManyField('models.Order', related_name='products', through='order_details')
 
-class Product(Base):
-    __tablename__ = 'products'  # Corrected __tablename__
-
-    product_id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), nullable=False)
-    description = Column(Text)
-    price = Column(DECIMAL(10, 2), nullable=False)
-    stock_quantity = Column(Integer, nullable=False)
-    category_id = Column(Integer, ForeignKey('categories.category_id'))
-
-    category = relationship('Category', back_populates='products')
-    order_details = relationship('OrderDetail', back_populates='product')
-    inventory_entries = relationship('Inventory', back_populates='product')
-    orders = relationship("Order", back_populates="product")
+    class Meta:
+        table = 'products'
 
